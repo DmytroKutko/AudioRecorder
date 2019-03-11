@@ -2,9 +2,10 @@ package com.example.voicerecordtest;
 
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -13,8 +14,10 @@ import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "MainActivity1";
     private Button btnStart, btnStop, btnPlay;
     private MediaRecorder recorder;
+    private MediaPlayer mediaPlayer;
     private String outputFile;
 
 
@@ -65,13 +68,17 @@ public class MainActivity extends AppCompatActivity {
         btnStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try{
-                    recorder.stop();
-                }catch(RuntimeException e){
-                    e.printStackTrace();
+
+                if (recorder != null) {
+                    try {
+                        recorder.stop();
+                    } catch (RuntimeException e) {
+                        e.printStackTrace();
+                    } finally {
+                        recorder.release();
+                        recorder = null;
+                    }
                 }
-                recorder.release();
-                recorder = null;
 
                 btnStart.setEnabled(true);
                 btnStop.setEnabled(false);
@@ -84,9 +91,11 @@ public class MainActivity extends AppCompatActivity {
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MediaPlayer mediaPlayer = new MediaPlayer();
+                mediaPlayer = new MediaPlayer();
                 try {
+                    Log.d(TAG, "onClick: dataSource");
                     mediaPlayer.setDataSource(outputFile);
+                    Log.d(TAG, "onClick: prepare");
                     mediaPlayer.prepare();
                     mediaPlayer.start();
                     Toast.makeText(MainActivity.this, "Playing audio", Toast.LENGTH_SHORT).show();
